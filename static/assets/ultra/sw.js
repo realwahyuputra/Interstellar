@@ -22,7 +22,7 @@ class UVServiceWorker extends EventEmitter {
           "upgrade-insecure-requests",
           "x-content-type-options",
           "x-download-options",
-          "x-frame-options",
+          // Removed "x-frame-options" from here to allow iframe embedding
           "x-permitted-cross-domain-policies",
           "x-powered-by",
           "x-xss-protection",
@@ -82,6 +82,17 @@ class UVServiceWorker extends EventEmitter {
         u = new HookEvent(c, null, null);
       if ((this.emit("beforemod", u), u.intercepted)) return u.returnValue;
       for (const e of this.headers.csp) c.headers[e] && delete c.headers[e];
+      
+      // Explicitly allow iframe embedding from any origin
+      // Remove any existing X-Frame-Options header and don't set a restrictive one
+      delete c.headers["x-frame-options"];
+      
+      // Optionally, you can set Content-Security-Policy frame-ancestors to be more specific
+      // For example, to allow specific domains:
+      // c.headers["content-security-policy"] = "frame-ancestors *;";
+      // Or to allow all origins (less secure but maximum compatibility):
+      c.headers["content-security-policy"] = "frame-ancestors *;";
+      
       if (
         (c.headers.location &&
           (c.headers.location = t.rewriteUrl(c.headers.location)),
@@ -426,6 +437,7 @@ function eventTargetAgnosticAddListener(e, t, r, n) {
       );
     e.addEventListener(t, function s(i) {
       n.once && e.removeEventListener(t, s), r(i);
+    });
     });
   }
 }
