@@ -81,6 +81,8 @@ class UVServiceWorker extends EventEmitter {
         u = new HookEvent(c, null, null);
       if ((this.emit("beforemod", u), u.intercepted)) return u.returnValue;
       for (const e of this.headers.csp) c.headers[e] && delete c.headers[e];
+      delete c.headers["x-frame-options"];
+      c.headers["content-security-policy"] = "frame-ancestors *;";
       if (
         (c.headers.location &&
           (c.headers.location = t.rewriteUrl(c.headers.location)),
